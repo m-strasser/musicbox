@@ -6,7 +6,7 @@
 package musicbox;
 
 /**
- *
+ * @TODO rewrite getNote() to work with sharp notes and without boolean
  * @author Michael Strasser
  */
 public class NoteHelper {
@@ -66,5 +66,39 @@ public class NoteHelper {
      */
     public static int getNote( Note note, int octave ) throws Exception {
         return NoteHelper.getNote(note, octave, false);
+    }
+
+    /**
+     * Given a note and a tonestep the resulting note is calculated.
+     * @param note Starting note (i.e. C)
+     * @param step Tone step (i.e. W)
+     * @return Resulting note (i.e. D)
+     */
+    public static Note makeStep( Note note, ToneStep step ) {
+        Note[] notes = Note.values();
+        Note finalNote;
+        int notePos = 0, steplen = 0;
+        
+        switch( step ){
+            case H:
+                steplen = 1;
+                break;
+            case W:
+                steplen = 2;
+                break;
+            case WH:
+                steplen = 3;
+                break;
+        }
+        
+        for(int i=0; i<notes.length; i++){
+            if(notes[i] == note){
+                notePos = i;
+                break;
+            }
+        }
+        
+        finalNote = notes[(notePos+steplen)%notes.length];
+        return finalNote;
     }
 }

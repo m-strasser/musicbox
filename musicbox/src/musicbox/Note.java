@@ -12,10 +12,15 @@ package musicbox;
  */
 public enum Note {
     A,
+    Ais,
     B,
     C,
+    Cis,
     D,
+    Dis,
     E,
     F,
-    G
+    Fis,
+    G,
+    Gis
 }
