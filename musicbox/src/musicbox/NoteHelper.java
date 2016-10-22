@@ -16,7 +16,7 @@ public class NoteHelper {
      * @return The midi note number (21-108)
      * @throws Exception If an invalid note or octave is given.
      */
-    public static int getNote( Note note, int octave ) throws Exception {
+    public static int getNote( NoteName note, int octave ) throws Exception {
         int midi = -1;
         
         switch( note ) {
@@ -72,9 +72,9 @@ public class NoteHelper {
      * @param step Tone step (i.e. W)
      * @return Resulting note (i.e. D)
      */
-    public static Note makeStep( Note note, ToneStep step ) {
-        Note[] notes = Note.values();
-        Note finalNote;
+    public static NoteName makeStep( NoteName note, ToneStep step ) {
+        NoteName[] notes = NoteName.values();
+        NoteName finalNote;
         int notePos = 0, steplen = 0;
         
         switch( step ){

@@ -1,26 +1,36 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package musicbox;
 
-/**
- * Defines valid note names.
- * 
- * @author Michael Strasser
- */
-public enum Note {
-    A,
-    Ais,
-    B,
-    C,
-    Cis,
-    D,
-    Dis,
-    E,
-    F,
-    Fis,
-    G,
-    Gis
+public class Note {
+	private NoteName pitch;
+	private NoteLength duration;
+	private double noteOn;
+	private double noteOff = -1;
+	
+	public Note(NoteName pitch, NoteLength duration) {
+		this.pitch = pitch;
+		this.duration = duration;
+	}
+	
+	public Note(NoteName pitch, NoteLength duration, double noteOn) {
+		this(pitch, duration);
+		this.noteOn = noteOn;
+	}
+	
+	public NoteName getPitch() {
+		return this.pitch;
+	}
+	
+	public NoteLength getDuration() {
+		return this.duration;
+	}
+	
+	public double getNoteOn() {
+		return this.noteOn;
+	}
+	
+	public double getNoteOff() {
+		if(noteOff < 0)
+			this.noteOff = this.noteOn + this.duration.getLength();
+		 return this.noteOff;
+	}
 }
