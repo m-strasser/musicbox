@@ -5,6 +5,8 @@
  */
 package musicbox;
 
+import java.util.Arrays;
+
 import javax.sound.midi.Instrument;
 import javax.sound.midi.MidiChannel;
 import javax.sound.midi.MidiSystem;
@@ -25,16 +27,26 @@ public class Musicbox {
     	// Simple MIDI test
     	NoteLength q = NoteLength.quarter;
     	Note[] voice1 = {
-    			new Note(NoteName.C, q),
-    			new Note(NoteName.D, q),
-    			new Note(NoteName.E, q),
-    			new Note(NoteName.C, q),
-    			new Note(NoteName.C, q),
-    			new Note(NoteName.D, q),
-    			new Note(NoteName.E, q),
-    			new Note(NoteName.C, q)
+    			new Note(NoteName.C, q, 0),
+    			new Note(NoteName.D, q, 0.25),
+    			new Note(NoteName.E, q, 0.5),
+    			new Note(NoteName.C, q, 0.75),
+    			new Note(NoteName.C, q, 1),
+    			new Note(NoteName.D, q, 1.25),
+    			new Note(NoteName.E, q, 1.5),
+    			new Note(NoteName.C, q, 1.75),
+    			new Note(NoteName.E, q, 2),
+    			new Note(NoteName.F, q, 2.25),
+    			new Note(NoteName.G, NoteLength.half, 2.5),
+    			new Note(NoteName.E, q, 3),
+    			new Note(NoteName.F, q, 3.25),
+    			new Note(NoteName.G, NoteLength.half, 3.5),
     	};
-    	Note[] voice2 = voice1;
+
+    	Note[] voice2 = new Note[voice1.length];
+    	for(int i=0; i<voice2.length; i++) {
+    		voice2[i] = new Note(voice1[i]);
+    	}
     	
     	double h = Canonizer.move(NoteLength.quarter.getLength(), voice1, voice2);
     	double h2 = Canonizer.move(NoteLength.half.getLength(), voice1, voice2);
@@ -52,6 +64,7 @@ public class Musicbox {
     	System.out.println(h6);
     	System.out.println(h7);
     	
+    	/**
     	Synthesizer synth;
 		try {
 			synth = MidiSystem.getSynthesizer();
@@ -70,7 +83,7 @@ public class Musicbox {
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}**/
     }
     
 }

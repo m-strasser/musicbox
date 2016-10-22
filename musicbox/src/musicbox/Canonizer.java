@@ -1,5 +1,7 @@
 package musicbox;
 
+import java.util.Arrays;
+
 /**
  * Composes a musical canon based on variations of a given subject.
  * @author mstrasser
@@ -29,11 +31,13 @@ public class Canonizer {
 		double wholemovement = 0; // by which length did we move so far?
 		double voice1movement = 0; // how far did we move in voice1?
 		double voice2movement = 0; // how far did we move in voice2?
-		double cur = 0, dist = 0, len1, len2;
+		double cur = 0, dist = 0, len1 = 0, len2 = 0;
 		double harmony = 0;
+		double stepsize=0, remainder = -1;
 		int v1Start, i = 0, j = 0;
 		
-		Note cur1, cur2;
+		Note cur1 = null, cur2 = null;
+		Note[] moved1 = new Note[voice1.length];
 		
 		// calculate starting index of voice1
 		// (i.e. move index until we've reached the given distance)
@@ -41,22 +45,51 @@ public class Canonizer {
 			cur += voice1[v1Start].getDuration().getLength();
 		}
 		
-		// start comparison
-		cur1 = voice1[v1Start];
-		cur2 = voice2[0];
+		// Correct positions in moved voice1
+		for(int k=0; k<moved1.length; k++) {
+			double noteOn = 0;
+			moved1[k] = voice1[(v1Start + k) % voice1.length];
 
-		while(j < voice2.length) {
-			cur1 = voice1[(v1Start + i) % voice1.length];
-			cur2 = voice2[j];
-			
+			if(k > 0)
+				noteOn = moved1[k-1].getNoteOff();
+			moved1[k].setNoteOn(noteOn);
+		}
+		
+		voice1 = moved1;
+		
+		// start comparison
+		Partition p = new Partition(voice1, voice2, 4);
+		Partition.VoiceNotes curNotes;
+
+		curNotes = p.moveCursor(0);
+		 while(true) {
+			cur1 = curNotes.v1;
+			cur2 = curNotes.v2;
+
+			if(cur1 == null && cur2 == null) break;
 			len1 = cur1.getDuration().getLength();
 			len2 = cur2.getDuration().getLength();
-			
+
+			stepsize = Math.min(len1, len2);
+			if(remainder > 0){
+				stepsize = remainder;
+				remainder = -1;
+			}
+
 			cur = Interval.fromInt(cur2.getPitch().ordinal() - cur1.getPitch().ordinal()).getHarmony();
-			harmony += Interval.fromInt(cur2.getPitch().ordinal() - cur1.getPitch().ordinal()).getHarmony();
+			harmony += cur;
 			System.out.println(cur1.getPitch().toString() + " - " + cur2.getPitch().toString() + ": " + cur);
-			j++;
-			i++;
+			curNotes = p.moveCursor(stepsize);
+
+			if(curNotes.v1 == cur1) {
+				remainder = len1 - stepsize;
+				System.out.println("We didn't move on Voice 1. " + remainder + " " + len1 + " " + stepsize);
+			}
+
+			if(curNotes.v2 == cur2) {
+				remainder = len2 - stepsize;
+				System.out.println("We didn't move on Voice 2." + remainder + " " + len2 + " " + stepsize);
+			}
 		}
 
 		System.out.println("---------------------------------------------------------");

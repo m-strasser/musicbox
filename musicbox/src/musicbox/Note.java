@@ -16,6 +16,10 @@ public class Note {
 		this.noteOn = noteOn;
 	}
 	
+	public Note(Note n) {
+		this(n.pitch, n.duration, n.noteOn);
+	}
+	
 	public NoteName getPitch() {
 		return this.pitch;
 	}
@@ -32,5 +36,10 @@ public class Note {
 		if(noteOff < 0)
 			this.noteOff = this.noteOn + this.duration.getLength();
 		 return this.noteOff;
+	}
+	
+	public void setNoteOn(double noteOn) {
+		this.noteOn = noteOn;
+		this.noteOff = -1;
 	}
 }
