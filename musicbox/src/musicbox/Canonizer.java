@@ -48,6 +48,141 @@ public class Canonizer {
 		return moved;
 	}
 	
+	public static Note[][] compose(Note[] subject, double treshhold) {
+		Note[][] composition = {subject}, newComposition = null;
+		Note[] cur, bestVoice = null;
+		boolean nonDis = false;
+		double length = calculateLength(subject);
+		double stepsize = 0.25;
+		double maxMoves = length/stepsize;
+		double[] moves = new double[(int)Math.floor(maxMoves)];
+		double hp = 0, best = 0;
+		
+		for(int i = 0; i<moves.length; i++) {
+			moves[i] = (i+1) * stepsize;
+		}
+		System.out.println("Found " + moves.length + " possible movements.");
+
+		while(true) {
+			nonDis = false;
+
+			for(int i=0; (i<moves.length && !nonDis); i++) {
+				if(moves[i] == -1) continue;
+				cur = Canonizer.moveBy(moves[i], subject);
+				newComposition = new Note[composition.length + 1][subject.length];
+				
+				for(int j=0; j<composition.length; j++){
+					newComposition[j] = composition[j];
+				}
+				newComposition[newComposition.length-1] = cur;
+				if(Canonizer.checkHarmony(newComposition)) {
+					moves[i] = -1;
+					nonDis = true;
+					break;
+				} else {
+					System.out.println("Found nonharmonic voice!");
+					newComposition = composition;
+				}
+			}
+			if(!nonDis) break;
+			composition = newComposition;
+			if(composition.length > 2) break;
+		}
+
+		return newComposition;
+	}
+	
+	/**
+	 * Returns the length of a sequence.
+	 * @param sequence The given sequence.
+	 * @return The length of the sequence.
+	 */
+	public static double calculateLength(Note[] sequence) {
+		double length = 0;
+		
+		for(int i=0; i<sequence.length; i++) {
+			length += sequence[i].getDuration().getLength();
+		}
+		
+		return length;
+	}
+	
+	/**
+	 * Returns the shortest note in an array of notes.
+	 * @param notes
+	 * @return
+	 */
+	public static double calculateMinLength(Note[] notes) {
+		double shortest = Double.MAX_VALUE, cur = 0;
+		
+		for(int i=0; i<notes.length; i++) {
+			cur = notes[i].getDuration().getLength();
+
+			if(cur < shortest)
+				shortest = cur;
+		}
+		
+		return shortest;
+	}
+
+	/**
+	 * Returns the length of the longest sequence in an array of sequences.
+	 * @param sequences The given sequences.
+	 * @return The length of the longest sequence.
+	 */
+	public static double calculateMaxLength(Note[][] sequences) {
+		double length = 0, maxLength = 0;
+		
+		for(int i=0; i<sequences.length; i++) {
+			length = Canonizer.calculateLength(sequences[i]);
+			if(length > maxLength) maxLength = length;
+		}
+		
+		return maxLength;
+	}
+
+	/**
+	 * Calculates the harmony of a given canon. If a dissonance is detected in the canon,
+	 * it immediately returns false.
+	 * 
+	 * @param voices The canon.
+	 * @return True, if no dissonances appear, otherwise false.
+	 */
+	public static boolean checkHarmony(Note[][] voices) {
+		int steps = 0;
+		double cur=0, curLen = 0;
+		double stepsize = 0;
+		
+		Canon c = new Canon(voices, Canonizer.calculateMaxLength(voices));
+		Note[] curNotes = c.moveCursorNew(0);
+		
+		while(curNotes != null) {
+			stepsize = Double.MAX_VALUE;
+			
+			// Check the harmony of each voice with the other voices
+			for(int i=0; i<curNotes.length -1; i++) {
+				if(curNotes[i] == null) continue;
+				for(int j=0; j<i; j++) {
+					if(curNotes[j] == null) continue;
+					steps = curNotes[j].getPitch().ordinal() - curNotes[i].getPitch().ordinal();
+					cur = Interval.fromInt(steps).getHarmony();
+					
+					// If we find a dissonance, return false
+					if(cur == 1) return false;
+				}
+				
+				// Find the shortest note and set it as the new stepsize
+				if(curNotes[i] != null) {
+					curLen = curNotes[i].getDuration().getLength();
+					if(stepsize > curLen)
+						stepsize = curLen;
+				}
+			}
+			curNotes = c.moveCursorNew(stepsize);
+		}
+
+		return true;
+	}
 	/**
 	 * Moves a second voice a given distance relative to the first voice and calculates the
 	 * resulting harmony points.

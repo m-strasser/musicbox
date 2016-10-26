@@ -32,7 +32,7 @@ public class Musicbox {
         // TODO code application logic here
     	// Simple MIDI test
     	NoteLength q = NoteLength.quarter;
-    	Note[] voice1 = {
+    	Note[] frere_jacque = {
     			new Note(NoteName.C, q, 0),
     			new Note(NoteName.D, q, 0.25),
     			new Note(NoteName.E, q, 0.5),
@@ -66,6 +66,35 @@ public class Musicbox {
     			new Note(NoteName.G, NoteLength.quarter, 7.25),
     			new Note(NoteName.C, NoteLength.half, 7.5),
     	};
+    	Note[] de_profundis = {
+    			new Note(NoteName.D, NoteLength.whole, 0),
+    			new Note(NoteName.D, NoteLength.half, 1),
+    			new Note(NoteName.D, NoteLength.half, 1.5),
+    			new Note(NoteName.D, NoteLength.whole, 2),
+    			new Note(NoteName.G, NoteLength.whole, 3),
+    			new Note(NoteName.C, NoteLength.half, 4),
+    			new Note(NoteName.C, NoteLength.quarter, 4.5),
+    			new Note(NoteName.B, NoteLength.quarter, 4.75),
+    			new Note(NoteName.C, NoteLength.quarter, 5),
+    			new Note(NoteName.D, NoteLength.quarter, 5.25),
+    			new Note(NoteName.E, NoteLength.half, 5.5),
+    			new Note(NoteName.E, NoteLength.quarter, 6),
+    			new Note(NoteName.D, NoteLength.quarter, 6.5),
+    			new Note(NoteName.C, NoteLength.quarter, 6.75),
+    			new Note(NoteName.B, NoteLength.quarter, 7),
+    			new Note(NoteName.A, NoteLength.half, 7.25),
+    			new Note(NoteName.D, NoteLength.whole, 7.75),
+    			new Note(NoteName.C, NoteLength.half, 8.75),
+    			new Note(NoteName.D, NoteLength.half, 9.25),
+    			new Note(NoteName.D, NoteLength.quarter, 9.75),
+    			new Note(NoteName.C, NoteLength.quarter, 10),
+    			new Note(NoteName.B, NoteLength.half, 10.25),
+    			new Note(NoteName.G, NoteLength.half, 10.75),
+    			new Note(NoteName.A, NoteLength.whole, 11.25),
+    			new Note(NoteName.G, NoteLength.half, 12.25),
+    			new Note(NoteName.G, NoteLength.quarter, 12.75)
+    	};
+    	Note[] voice1 = de_profundis;
 
     	Note[] voice2 = new Note[voice1.length];
     	for(int i=0; i<voice2.length; i++) {
@@ -97,13 +126,27 @@ public class Musicbox {
     	voice2 = Canonizer.moveBy(moveBy, voice1);
     	Note[] voice3 = Canonizer.moveBy(moveBy2nd, voice1);
     	double eighth = 300, fourth = 600, scnd = 1200, first = 600;
+    	int tick;
+    	
+    	Note[][] compo = Canonizer.compose(voice1, 0);
+    	System.out.println("Composed a canon with " + compo.length + " voices.");
     	try {
 			Sequence s = new Sequence(javax.sound.midi.Sequence.PPQ, 100);
 			Sequencer seq = MidiSystem.getSequencer();
-			Track t = s.createTrack();
 			Track t2 = s.createTrack();
 			Track t3 = s.createTrack();
 			
+			for(int i=0; i<compo.length; i++) {
+				Track t = s.createTrack();
+				currentTick = 0;
+				
+				for(int j=0; j<compo[i].length; j++) {
+					tick = (int)(compo[i][j].getDuration().getLength() * first);
+					addNote(t, currentTick, tick, NoteHelper.getNote(compo[i][j].getPitch(), 3+(-1)^i*1), 120);
+					currentTick += tick;
+				}
+			}
+			/**
 			for(int i=0; i<voice1.length; i++) {
 				addNote(t, currentTick, (int)(voice1[i].getDuration().getLength() * first), NoteHelper.getNote(voice1[i].getPitch(), 3), 120);
 				currentTick += (int)(voice1[i].getDuration().getLength() * first);
@@ -120,6 +163,7 @@ public class Musicbox {
 				addNote(t3, currentTick, (int)(voice1[i].getDuration().getLength() * first), NoteHelper.getNote(voice1[i].getPitch(), 4), 120);
 				currentTick += (int)(voice1[i].getDuration().getLength() * first);
 			}
+			**/
 			
 			seq.open();
 			seq.setSequence(s);

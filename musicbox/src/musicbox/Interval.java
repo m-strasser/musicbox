@@ -10,6 +10,7 @@ package musicbox;
  *
  */
 public enum Interval {
+	/**
 	Unison(0, 1),
 	MinorSecond(1, 0),
 	Second(2, 0.2),
@@ -23,7 +24,21 @@ public enum Interval {
 	MinorSeventh(10, 0.2),
 	MajorSeventh(11, 0),
 	Octave(12, 1);
-	
+	**/
+	Unison(0, 1),
+	MinorSecond(1, 0),
+	Second(2, 0),
+	MinorThird(3, 0.5),
+	MajorThird(4, 0.5),
+	PerfectFourth(5, 0),
+	Tritone(6, 0),
+	PerfectFifth(7, 1),
+	MinorSixth(8, 0.5),
+	MajorSixth(9, 0.5),
+	MinorSeventh(10, 0),
+	MajorSeventh(11, 0),
+	Octave(12, 1);
+
 	private int steps;
 	private double harmony;
 	
