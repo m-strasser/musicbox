@@ -22,6 +22,10 @@ public class Canon {
 		}
 	}
 
+	private Note[][] voices;
+	private Note[] notes;
+	private int[] indexes;
+
 	private Note[] voice1;
 	private Note[] voice2;
 	private Note v1C, v2C; // Current notes at voice 1 & 2
@@ -29,7 +33,18 @@ public class Canon {
 	private int v1Index = 0, v2Index = 0;
 	private double globalPos=0, globalLength;
 	
+	public Canon(Note[][] voices, double globalLength) {
+		this.voices = voices;
+		this.notes = new Note[voices.length];
+		this.indexes = new int[voices.length];
+		this.globalLength = globalLength;
+	}
+
+	@Deprecated
 	public Canon(Note[] voice1, Note[] voice2, double globalLength) {
+		this.voices = new Note[][]{voice1, voice2};
+		this.notes = new Note[2];
+		this.indexes = new int[2];
 		this.voice1 = voice1;
 		this.voice2 = voice2;
 		this.globalLength = globalLength;
@@ -40,10 +55,12 @@ public class Canon {
 	 * @param distance The distance.
 	 * @return The current note in all voices.
 	 */
+	@Deprecated
 	public VoiceNotes moveCursor(double distance) {
 		globalPos += distance;
 		if(globalPos >= globalLength)
 			return new VoiceNotes(null, null);
+		
 		Note n1 = v1C, n2 = v2C;
 		Note cur1 = voice1[v1Index % voice1.length];
 		Note cur2 = voice2[v2Index % voice2.length];
@@ -61,5 +78,27 @@ public class Canon {
 		}
 		
 		return new VoiceNotes(n1, n2);
+	}
+	
+	public Note[] moveCursorNew(double distance) {
+		Note cur;
+		Note[] curNotes = new Note[this.notes.length];
+		
+		globalPos += distance;
+		if(globalPos >= globalLength)
+			return null;
+
+		for(int i=0; i<this.voices.length; i++) {
+			curNotes[i] = this.notes[i];
+			cur = this.voices[i][this.indexes[i] % this.voices[i].length];
+			
+			if(cur.getNoteOn() <= globalPos && cur.getNoteOff() > globalPos) {
+				curNotes[i] = cur;
+				this.indexes[i] += 1;
+				this.notes[i] = cur;
+			}
+		}
+		
+		return curNotes;
 	}
 }
