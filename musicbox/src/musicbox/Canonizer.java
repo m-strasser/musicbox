@@ -20,6 +20,35 @@ public class Canonizer {
 	}
 	
 	/**
+	 * Moves a note sequence by the specified distance and returns it.
+	 * @param distance The distance of the shift (i.e. 0.5 to move a half note to the right).
+	 * @param seq The sequence to be moved.
+	 * @return The moved sequence.
+	 */
+	public static Note[] moveBy(double distance, Note[] seq) {
+		Note[] moved = new Note[seq.length];
+		int start;
+		double cur = 0;
+
+		// calculate starting index of seq
+		// (i.e. move index until we've reached the given distance)
+		for(start = 0; cur < distance; start++) {
+			cur += seq[start].getDuration().getLength();
+		}
+
+		for(int k=0; k<moved.length; k++) {
+			double noteOn = 0;
+			moved[k] = seq[(start + k) % seq.length];
+
+			if(k > 0)
+				noteOn = moved[k-1].getNoteOff();
+			moved[k].setNoteOn(noteOn);
+		}
+		
+		return moved;
+	}
+	
+	/**
 	 * Moves a second voice a given distance relative to the first voice and calculates the
 	 * resulting harmony points.
 	 * @param distance The distance of the movement (i.e. move voice 2 a quarter note to the right)
@@ -28,45 +57,27 @@ public class Canonizer {
 	 * @return The calculated harmony points for the given distance.
 	 */
 	public static double move(double distance, Note[] voice1, Note[] voice2) {
-		double wholemovement = 0; // by which length did we move so far?
-		double voice1movement = 0; // how far did we move in voice1?
-		double voice2movement = 0; // how far did we move in voice2?
-		double cur = 0, dist = 0, len1 = 0, len2 = 0;
+		double cur = 0, len1 = 0, len2 = 0;
 		double harmony = 0;
 		double stepsize=0, remainder = -1;
-		int v1Start, i = 0, j = 0;
 		
 		Note cur1 = null, cur2 = null;
-		Note[] moved1 = new Note[voice1.length];
-		
-		// calculate starting index of voice1
-		// (i.e. move index until we've reached the given distance)
-		for(v1Start = 0; cur < distance; v1Start++) {
-			cur += voice1[v1Start].getDuration().getLength();
-		}
-		
-		// Correct positions in moved voice1
-		for(int k=0; k<moved1.length; k++) {
-			double noteOn = 0;
-			moved1[k] = voice1[(v1Start + k) % voice1.length];
-
-			if(k > 0)
-				noteOn = moved1[k-1].getNoteOff();
-			moved1[k].setNoteOn(noteOn);
-		}
+		Note[] moved1 = Canonizer.moveBy(distance, voice1);
 		
 		voice1 = moved1;
 		
 		// start comparison
-		Partition p = new Partition(voice1, voice2, 8);
-		Partition.VoiceNotes curNotes;
+		Canon p = new Canon(voice1, voice2, 8);
+		Canon.VoiceNotes curNotes;
 
 		curNotes = p.moveCursor(0);
 		 while(true) {
 			cur1 = curNotes.v1;
 			cur2 = curNotes.v2;
 
+			// If both of our notes are null, we are at the end of the partition
 			if(cur1 == null && cur2 == null) break;
+
 			len1 = cur1.getDuration().getLength();
 			len2 = cur2.getDuration().getLength();
 
@@ -76,24 +87,25 @@ public class Canonizer {
 				remainder = -1;
 			}
 
+			// Calculate the harmony points of the current interval
 			cur = Interval.fromInt(cur2.getPitch().ordinal() - cur1.getPitch().ordinal()).getHarmony();
 			harmony += cur * stepsize;
-			System.out.println(cur1.getPitch().toString() + " - " + cur2.getPitch().toString() + ": " + cur);
+
+			// Get the next notes
 			curNotes = p.moveCursor(stepsize);
 
 			if(curNotes.v1 == cur1) {
+				// The note of voice 1 remained the same, this means the cursor is located at a point
+				// where the note is still ringing and we have to step to the end of this note in the
+				// next cycle of our loop
 				remainder = len1 - stepsize;
-				System.out.println("We didn't move on Voice 1. " + remainder + " " + len1 + " " + stepsize);
 			}
 
 			if(curNotes.v2 == cur2) {
 				remainder = len2 - stepsize;
-				System.out.println("We didn't move on Voice 2." + remainder + " " + len2 + " " + stepsize);
 			}
 		}
 
-		System.out.println("---------------------------------------------------------");
-		System.out.println(harmony);
 		/**
 		while(j < voice2.length) {
 			cur1 = voice1[v1Start + i];

@@ -14,6 +14,7 @@ import javax.sound.midi.MidiEvent;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
 import javax.sound.midi.Sequence;
+import javax.sound.midi.Sequencer;
 import javax.sound.midi.ShortMessage;
 import javax.sound.midi.Synthesizer;
 import javax.sound.midi.Track;
@@ -71,29 +72,60 @@ public class Musicbox {
     		voice2[i] = new Note(voice1[i]);
     	}
     	
-    	double h = Canonizer.move(NoteLength.quarter.getLength(), voice1, voice2);
-    	double h2 = Canonizer.move(NoteLength.half.getLength(), voice1, voice2);
-    	double h3 = Canonizer.move(0.75, voice1, voice2);
-    	double h4 = Canonizer.move(NoteLength.whole.getLength(), voice1, voice2);
-    	double h5 = Canonizer.move(1.25, voice1, voice2);
-    	double h6 = Canonizer.move(1.5, voice1, voice2);
-    	double h7 = Canonizer.move(1.75, voice1, voice2);
+    	double best = 0, second = 0, moveBy=0, moveBy2nd = 0;
+    	double[] harmonicPoints = new double[7];
+    	int currentTick = 0;
     	
-    	System.out.println("1 Q " + h);
-    	System.out.println("2 Q " + h2);
-    	System.out.println("3 Q " + h3);
-    	System.out.println("4 Q " + h4);
-    	System.out.println("5 Q " + h5);
-    	System.out.println("6 Q " + h6);
-    	System.out.println("7 Q " + h7);
+    	harmonicPoints[0] = Canonizer.move(NoteLength.quarter.getLength(), voice1, voice2);
+    	harmonicPoints[1] = Canonizer.move(NoteLength.half.getLength(), voice1, voice2);
+    	harmonicPoints[2] = Canonizer.move(0.75, voice1, voice2);
+    	harmonicPoints[3] = Canonizer.move(NoteLength.whole.getLength(), voice1, voice2);
+    	harmonicPoints[4] = Canonizer.move(1.25, voice1, voice2);
+    	harmonicPoints[5] = Canonizer.move(1.5, voice1, voice2);
+    	harmonicPoints[6] = Canonizer.move(1.75, voice1, voice2);
     	
-    	double eighth = 300, fourth = 600, second = 1200, first = 2400;
+    	for(int i=0; i<harmonicPoints.length; i++) {
+    		if(harmonicPoints[i] > best) {
+    			best = harmonicPoints[i];
+    			moveBy = (i+1)*0.25;
+    		} else if(harmonicPoints[i] > second) {
+    			second = harmonicPoints[i];
+    			moveBy2nd = (i+1) * 0.25;
+    		}
+    	}
+    	
+    	voice2 = Canonizer.moveBy(moveBy, voice1);
+    	Note[] voice3 = Canonizer.moveBy(moveBy2nd, voice1);
+    	double eighth = 300, fourth = 600, scnd = 1200, first = 600;
     	try {
-			Sequence s = new Sequence(javax.sound.midi.Sequence.PPQ, 24);
+			Sequence s = new Sequence(javax.sound.midi.Sequence.PPQ, 100);
+			Sequencer seq = MidiSystem.getSequencer();
 			Track t = s.createTrack();
+			Track t2 = s.createTrack();
+			Track t3 = s.createTrack();
 			
-			addNote(t, 0, 24, NoteHelper.getNote(NoteName.A, 3), 120);
-			addNote(t, 0, 24, NoteHelper.getNote(NoteName.C, 3), 120);
+			for(int i=0; i<voice1.length; i++) {
+				addNote(t, currentTick, (int)(voice1[i].getDuration().getLength() * first), NoteHelper.getNote(voice1[i].getPitch(), 3), 120);
+				currentTick += (int)(voice1[i].getDuration().getLength() * first);
+			}
+
+			currentTick = (int)(moveBy * first);
+			for(int i=0; i<voice1.length; i++) {
+				addNote(t2, currentTick, (int)(voice1[i].getDuration().getLength() * first), NoteHelper.getNote(voice1[i].getPitch(), 2), 120);
+				currentTick += (int)(voice1[i].getDuration().getLength() * first);
+			}
+
+			currentTick = (int)(moveBy2nd * first);
+			for(int i=0; i<voice1.length; i++) {
+				addNote(t3, currentTick, (int)(voice1[i].getDuration().getLength() * first), NoteHelper.getNote(voice1[i].getPitch(), 4), 120);
+				currentTick += (int)(voice1[i].getDuration().getLength() * first);
+			}
+			
+			seq.open();
+			seq.setSequence(s);
+			seq.start();
+			//seq.stop();
+			//seq.close();
 		} catch (InvalidMidiDataException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -102,6 +134,7 @@ public class Musicbox {
 			e.printStackTrace();
 		}
 
+    	/**
     	Synthesizer synth;
 		try {
 			synth = MidiSystem.getSynthesizer();
@@ -121,6 +154,7 @@ public class Musicbox {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		**/
     }
     
     private static void addNote(Track track, int startTick, int tickLength, int key, int velocity) throws InvalidMidiDataException {

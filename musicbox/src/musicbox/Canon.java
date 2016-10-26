@@ -2,15 +2,17 @@ package musicbox;
 
 /**
  * A class that helps you keep track of multiple voices, that shall form
- * a single composition.
+ * a single canon.
  * It has a global cursor that moves along the voices and can return the corresponding
  * notes (e.g. if you have a quarter note in voice1 and two eighth notes in voice 2
  * moving the global cursor by an eighth note will result in returning the quarter note
  * from voice1 and the second eighth note in voice2).
+ * As we're working with a canon, we're assuming that the voices will be repeated over
+ * and over until the longest voice has reached its end.
  * @author mstrasser
  *
  */
-public class Partition {
+public class Canon {
 	public class VoiceNotes {
 		public Note v1, v2;
 		
@@ -25,10 +27,9 @@ public class Partition {
 	private Note v1C, v2C; // Current notes at voice 1 & 2
 	
 	private int v1Index = 0, v2Index = 0;
-	private double v1Pos=0, v2Pos=0;
 	private double globalPos=0, globalLength;
 	
-	public Partition(Note[] voice1, Note[] voice2, double globalLength) {
+	public Canon(Note[] voice1, Note[] voice2, double globalLength) {
 		this.voice1 = voice1;
 		this.voice2 = voice2;
 		this.globalLength = globalLength;
@@ -54,7 +55,7 @@ public class Partition {
 		}
 		
 		if(cur2.getNoteOn() <= globalPos && cur2.getNoteOff() > globalPos) {
-			n2 = voice2[v2Index];
+			n2 = voice2[v2Index % voice2.length];
 			v2Index += 1;
 			v2C = n2;
 		}
