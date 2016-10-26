@@ -58,7 +58,7 @@ public class Canonizer {
 		voice1 = moved1;
 		
 		// start comparison
-		Partition p = new Partition(voice1, voice2, 4);
+		Partition p = new Partition(voice1, voice2, 8);
 		Partition.VoiceNotes curNotes;
 
 		curNotes = p.moveCursor(0);
@@ -77,7 +77,7 @@ public class Canonizer {
 			}
 
 			cur = Interval.fromInt(cur2.getPitch().ordinal() - cur1.getPitch().ordinal()).getHarmony();
-			harmony += cur;
+			harmony += cur * stepsize;
 			System.out.println(cur1.getPitch().toString() + " - " + cur2.getPitch().toString() + ": " + cur);
 			curNotes = p.moveCursor(stepsize);
 

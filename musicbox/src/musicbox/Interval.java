@@ -1,18 +1,27 @@
 package musicbox;
 
+/**
+ * A representation of musical intervals including their names, their distance in halftone steps and their musical quality according to the following classification:
+ * 	* 1 - Perfect Consonance
+ * 	* 0.5 - Imperfect Consonance
+ * 	* 0 - Dissonance
+ * These categories are only a rough guideline and should be varied according to the achievable results in harmony.
+ * @author mstrasser
+ *
+ */
 public enum Interval {
 	Unison(0, 1),
 	MinorSecond(1, 0),
-	Second(2, 0.35),
-	MinorThird(3, 1),
-	MajorThird(4, 1),
-	PerfectFourth(5, 1),
-	Tritone(6, 0.5),
+	Second(2, 0.2),
+	MinorThird(3, 0.5),
+	MajorThird(4, 0.5),
+	PerfectFourth(5, 0.4),
+	Tritone(6, 0),
 	PerfectFifth(7, 1),
-	MinorSixth(8, 0.65),
-	MajorSixth(9, 0.9),
-	MinorSeventh(10, 0.65),
-	MajorSeventh(11, 0.5),
+	MinorSixth(8, 0.55),
+	MajorSixth(9, 0.6),
+	MinorSeventh(10, 0.2),
+	MajorSeventh(11, 0),
 	Octave(12, 1);
 	
 	private int steps;
